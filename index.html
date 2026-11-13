@@ -249,7 +249,7 @@ async function loadDash() {
     $("#dashBox").innerHTML = `<p class="mut">Masuk sebagai ${esc(user.nama)} (${esc(user.peran)}) · evaluasi aktif: ${esc((d.evaluasi && d.evaluasi.periodeAktif) || "tidak ada")}, responden ${+(d.evaluasi && d.evaluasi.responden) || 0}</p><button class="btn sec" onclick="chgPw()">Ganti kata sandi</button><div class="grid">
      <div class="stat"><b>${+d.total || 0}</b>Total aduan</div><div class="stat"><b>${+d.belumSelesai || 0}</b>Belum selesai</div>
      <div class="stat"><b>${+d.urgensiTinggi || 0}</b>Urgensi tinggi</div><div class="stat"><b>${d.rataHari == null ? "-" : esc(d.rataHari)}</b>Rata-rata hari selesai</div></div>
-     <h3>Per status</h3>${bars(d.perStatus || {})}<h3>Per kategori</h3>${bars(d.perKategori || {})}`;
+     <h3>Tren aduan per bulan</h3>${trend(d.perBulan || {})}<h3>Per status</h3>${bars(d.perStatus || {})}<h3>Per kategori</h3>${bars(d.perKategori || {})}`;
   } catch (e) { $("#dashBox").textContent = e.message; }
 }
 async function loadList() {
@@ -450,6 +450,23 @@ LOADERS.set = async () => {
     b.querySelectorAll(".row").forEach(r => r.onclick = () => ed(u[r.dataset.i]));
   } catch (e) { b.textContent = e.message; }
 };
+
+
+// grafik tren bulanan (SVG, 12 bulan terakhir, bulan kosong = 0)
+const MON = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+function trend(o) {
+  const ks = Object.keys(o).sort(); if (!ks.length) return '<p class="mut">Belum ada data.</p>';
+  const [y0, m0] = ks[0].split("-").map(Number), [y1, m1] = ks[ks.length - 1].split("-").map(Number);
+  let all = [], y = y0, m = m0;
+  while (y * 12 + m <= y1 * 12 + m1) { all.push(y + "-" + String(m).padStart(2, "0")); m++; if (m > 12) { m = 1; y++; } }
+  all = all.slice(-12);
+  const v = all.map(k => o[k] || 0), mx = Math.max(1, ...v), W = 320, H = 150, bw = W / all.length;
+  const b = v.map((n, i) => {
+    const h = n / mx * 90, x = i * bw + bw * .15, cx = x + bw * .35, mo = +all[i].slice(5), lb = MON[mo - 1] + (i === 0 || mo === 1 ? " '" + all[i].slice(2, 4) : "");
+    return `<rect x="${x}" y="${120 - h}" width="${bw * .7}" height="${Math.max(h, n ? 2 : 0)}" rx="3" fill="var(--p)"/><text x="${cx}" y="${115 - h}" text-anchor="middle" font-size="10" fill="var(--tx)">${n}</text><text x="${cx}" y="138" text-anchor="middle" font-size="9" fill="var(--mut)">${lb}</text>`;
+  }).join("");
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Jumlah aduan per bulan"><line x1="0" y1="120" x2="${W}" y2="120" stroke="var(--ln)"/>${b}</svg>`;
+}
 
 buildNav(); show("home"); initPublic();
 </script>
