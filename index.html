@@ -130,7 +130,7 @@ footer{padding:28px 0 0;color:var(--faint);font-size:.8rem}
  <div class="it" data-go="aduan"><span class="n">01</span><div class="b"><b>Sampaikan aduan</b><span>Aduan, keluhan, kritik, saran, atau aspirasi. Anda menerima nomor tiket untuk memantau tindak lanjut.</span></div></div>
  <div class="it" data-go="cek"><span class="n">02</span><div class="b"><b>Cek status tiket</b><span>Masukkan nomor tiket untuk melihat status dan respons pengelola.</span></div></div>
  <div class="it" data-go="eval"><span class="n">03</span><div class="b"><b>Evaluasi Kepala Madrasah</b><span>Kuesioner anonim yang dibuka setiap semester oleh pengelola.</span></div></div>
- <div class="it" data-go="refg"><span class="n">04</span><div class="b"><b>Refleksi diri guru</b><span>Refleksi akhir semester atau tahun. Identitas tercatat dan dibaca Admin dan Kepala Madrasah.</span></div></div>
+ <div class="it" data-go="refg"><span class="n">04</span><div class="b"><b>Refleksi diri guru</b><span>Refleksi akhir semester atau tahun.</span></div></div>
  <p class="mut" style="margin-top:20px">Tidak ada nama, email, atau IP guru yang disimpan. Simpan nomor tiket Anda: itu satu-satunya cara memeriksa status.</p>
 </section>
 
@@ -544,7 +544,7 @@ function renderRef(box, d) {
   const J = d.jenis, g = J === "GURU";
   const inp = (id, l, ph) => `<label for="${id}">${esc(l)}</label><input id="${id}" maxlength="200"${ph ? ` placeholder="${esc(ph)}"` : ""}>`;
   box.innerHTML = `<div class="eb">Evaluasi dan refleksi</div><h2>${esc(d.judul)}</h2>
-   <p class="lead">${g ? "Dibaca oleh Admin dan Kepala Madrasah. Identitas Anda tercatat." : "Dibaca oleh Kepala Madrasah dan Admin."} Dikirim satu kali per periode.</p>
+   <p class="lead">Identitas Anda tercatat. Dikirim satu kali per periode.</p>
    <ol class="mut">${d.petunjuk.map(x => `<li>${esc(x)}</li>`).join("")}</ol>
    <form id="fRef" autocomplete="off">
     <h3>Periode</h3><div class="cols"><div><label class="req" for="rp">Periode</label><select id="rp">${d.periode.map(p => `<option>${esc(p)}</option>`).join("")}</select></div><div><label class="req" for="rt">Tahun pelajaran</label><input id="rt" maxlength="9" placeholder="2026/2027"></div></div>
