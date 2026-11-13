@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hotline MANU - Guru</title>
+<style>
+:root{--bg1:#dde2f6;--bg2:#f1e3f3;--bg3:#f7d9e4;--shell:rgba(255,255,255,.55);--rail:#1d2845;--side:#eef0fb;--card:#fff;--tx:#1b1f33;--mut:#666c85;--p:#4a4fbf;--btnt:#fff;--pc:#dfe2fb;--fill:#eceef7;--ln:#dcdff0;--ok:#1a7f4b;--err:#b3261e}
+@media(prefers-color-scheme:dark){:root{--bg1:#14172a;--bg2:#1d1830;--bg3:#2a1a2e;--shell:rgba(30,34,58,.6);--rail:#0d1224;--side:#1a1f38;--card:#232843;--tx:#e7e9f6;--mut:#a0a6c4;--p:#a5a8ff;--btnt:#14172a;--pc:#33396b;--fill:#2c3254;--ln:#363c63;--ok:#7fd9a2;--err:#ff8a7a}}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:linear-gradient(135deg,var(--bg1),var(--bg2) 55%,var(--bg3)) fixed;color:var(--tx);font:16px/1.55 "Roboto",system-ui,-apple-system,"Segoe UI",sans-serif}
+.app{display:flex;max-width:1100px;margin:16px auto;min-height:calc(100vh - 32px);background:var(--shell);backdrop-filter:blur(12px);border-radius:24px;overflow:hidden;box-shadow:0 8px 40px rgba(60,60,120,.2)}
+.rail{width:60px;flex:none;background:var(--rail);border-radius:20px;margin:8px;padding:12px 0;display:flex;flex-direction:column;align-items:center;gap:6px}
+.rail .logo{width:34px;height:34px;border-radius:10px;background:#6f74e8;color:#fff;font-weight:800;display:grid;place-items:center;margin-bottom:10px}
+.rail button{width:40px;height:40px;border:0;border-radius:12px;background:none;color:#aab1d6;cursor:pointer;display:grid;place-items:center}
+.rail button.on{background:rgba(255,255,255,.16);color:#fff}
+.side{width:230px;flex:none;padding:20px 12px}
+.side h1{font-size:1.25rem;margin:0 10px}.side p{margin:0 10px}
+.side h4{margin:18px 10px 6px;font-size:.82rem;color:var(--mut);font-weight:600}
+.side button{display:block;width:100%;text-align:left;border:0;background:none;color:var(--tx);padding:10px 12px;border-radius:12px;font:inherit;font-size:.93rem;cursor:pointer}
+.side button:hover{background:var(--fill)}
+.side button.on{background:var(--pc);color:var(--p);font-weight:600}
+main{flex:1;min-width:0;padding:20px 20px 24px 8px}
+.card{background:var(--card);border-radius:16px;padding:18px;margin-bottom:14px;box-shadow:0 1px 3px rgba(60,60,120,.08)}
+h2{margin:0 0 10px;font-size:1.2rem}h3{margin:16px 0 6px;font-size:1rem}
+label{display:block;margin:14px 0 4px;font-weight:500;font-size:.82rem;color:var(--mut)}
+input,select,textarea{width:100%;padding:12px;border:0;border-bottom:2px solid transparent;border-radius:10px;background:var(--fill);color:var(--tx);font:inherit}
+textarea{min-height:110px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:0;border-bottom-color:var(--p)}
+button:focus-visible{outline:3px solid var(--p);outline-offset:2px}
+.btn{background:var(--p);color:var(--btnt);border:0;padding:10px 22px;border-radius:99px;font:inherit;font-weight:500;cursor:pointer;margin:14px 6px 0 0}
+.btn.sec{background:var(--pc);color:var(--p)}
+.btn:disabled{opacity:.5;cursor:wait}
+.mut{color:var(--mut);font-size:.9rem}
+.tiket{font:700 1.5rem ui-monospace,Consolas,monospace;letter-spacing:.05em;padding:14px;background:var(--fill);border-radius:12px;text-align:center;margin:10px 0;user-select:all}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.stat{background:var(--fill);border-radius:12px;padding:12px}.stat b{display:block;font-size:1.6rem;color:var(--p)}
+.bar{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:.88rem}
+.bar i{display:block;height:12px;background:var(--p);border-radius:6px;min-width:3px}
+.bar span:first-child{flex:0 0 150px}
+.row{padding:12px;background:var(--fill);border-radius:12px;margin-bottom:8px;cursor:pointer}
+.row:hover{outline:2px solid var(--p)}
+.tag{display:inline-block;padding:1px 10px;border-radius:8px;background:var(--pc);color:var(--p);font-size:.78rem;font-weight:500}
+.likert{display:flex;gap:6px;flex-wrap:wrap}
+.likert label{display:flex;align-items:center;gap:4px;margin:0;font-size:.95rem;color:var(--tx);background:var(--fill);border-radius:10px;padding:8px 12px;cursor:pointer}
+.likert input{width:auto;accent-color:var(--p)}
+.tl{border-left:3px solid var(--p);padding:0 0 0 10px;margin:10px 0}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2b2f4a;color:#fff;padding:10px 18px;border-radius:12px;display:none;z-index:20;max-width:90%}
+#toast.err{background:var(--err);color:#fff}
+.modal{position:fixed;inset:0;background:rgba(20,22,45,.5);display:none;overflow:auto;z-index:15;padding:12px}
+.modal>div{max-width:680px;margin:20px auto;background:var(--card);border-radius:20px;padding:18px}
+.hide{display:none!important}
+footer{text-align:center;padding:12px 0 24px;color:var(--mut);font-size:.82rem}
+@media(max-width:760px){
+ .app{margin:0;border-radius:0;min-height:100vh;display:block}
+ .side{display:none}
+ .rail{position:fixed;bottom:0;left:0;right:0;width:auto;height:60px;margin:0;border-radius:18px 18px 0 0;flex-direction:row;justify-content:space-around;padding:0 6px;z-index:9}
+ .rail .logo{display:none}
+ main{padding:14px 12px 80px}
+ .bar span:first-child{flex-basis:100px}
+}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.88rem}th,td{padding:8px;border-bottom:1px solid var(--ln);text-align:left;vertical-align:top}th{color:var(--mut);font-weight:600}
+.rail{overflow-y:auto}
+@media(max-width:760px){.rail{justify-content:flex-start;overflow-x:auto;overflow-y:hidden}.rail button{flex:none}}
+</style>
+</head>
+<body>
+<div class="app"><aside class="rail" id="rail"></aside><aside class="side" id="side"></aside><main>
+
+<section data-v="home">
+ <div class="card"><h2>Suara guru didengar</h2>
+ <p>Sampaikan aduan, kritik, saran, atau aspirasi tanpa login dan tanpa identitas. Setiap aduan mendapat nomor tiket untuk memantau tindak lanjut.</p>
+ <button class="btn" onclick="show('aduan')">Sampaikan aduan</button>
+ <button class="btn sec" onclick="show('cek')">Cek status tiket</button></div>
+ <div class="card"><h3>Panduan singkat</h3>
+ <p class="mut">Tidak ada nama, email, atau IP guru yang disimpan. Simpan nomor tiket Anda: itu satu-satunya cara memeriksa status. Jangan menulis identitas diri atau pihak lain yang tidak perlu di isi aduan.</p></div>
+</section>
+
+<section data-v="aduan" class="hide">
+ <div class="card"><h2>Sampaikan aduan</h2>
+ <form id="fAduan" autocomplete="off">
+  <label for="jenis">Jenis penyampaian</label>
+  <select id="jenis" required></select>
+  <label for="kat">Kategori</label><select id="kat" required></select>
+  <label for="sub">Subkategori</label><select id="sub"></select>
+  <label for="judul">Judul</label><input id="judul" maxlength="150" required>
+  <label for="isi">Isi</label><textarea id="isi" maxlength="3000" required placeholder="Uraikan kejadian, waktu, tempat, dan dampaknya."></textarea>
+  <label for="urg">Urgensi</label>
+  <select id="urg"><option>Rendah</option><option selected>Sedang</option><option>Tinggi</option></select>
+  <label for="harap">Harapan penyelesaian (opsional)</label><textarea id="harap" maxlength="1000" style="min-height:70px"></textarea>
+  <button class="btn" id="bAduan">Kirim</button>
+ </form>
+ <div id="hasilAduan" class="hide">
+  <h3>Aduan terkirim</h3><p>Simpan nomor tiket ini:</p>
+  <div class="tiket" id="tiketOut"></div>
+  <button class="btn sec" onclick="copyTiket()">Salin nomor tiket</button>
+  <button class="btn" onclick="resetAduan()">Kirim aduan lain</button>
+ </div></div>
+</section>
+
+<section data-v="cek" class="hide">
+ <div class="card"><h2>Cek status tiket</h2>
+ <label for="tk">Nomor tiket</label><input id="tk" maxlength="40" autocapitalize="characters">
+ <button class="btn" id="bCek">Cek status</button></div>
+ <div id="cekOut"></div>
+</section>
+
+<section data-v="eval" class="hide">
+ <div class="card"><h2>Evaluasi Kepala Madrasah</h2><div id="evalBox" class="mut">Memuat...</div></div>
+</section>
+
+<section data-v="login" class="hide">
+ <div class="card"><h2>Masuk pengelola</h2>
+ <form id="fLogin"><label for="u">Username</label><input id="u" autocomplete="username" required>
+ <label for="p">Kata sandi</label><input id="p" type="password" autocomplete="current-password" required>
+ <button class="btn">Masuk</button></form></div>
+</section>
+
+<section data-v="dash" class="hide">
+ <div class="card"><h2>Dashboard aduan</h2><div id="dashBox" class="mut">Memuat...</div></div>
+</section>
+
+<section data-v="list" class="hide">
+ <div class="card"><h2>Daftar aduan</h2>
+ <label for="fs">Filter status</label><select id="fs"></select>
+ <div id="listBox" style="margin-top:12px"></div></div>
+</section>
+
+<section data-v="kat" class="hide"><div class="card" id="box_kat"></div></section>
+<section data-v="ban" class="hide"><div class="card" id="box_ban"></div></section>
+<section data-v="per" class="hide"><div class="card" id="box_per"></div></section>
+<section data-v="has" class="hide"><div class="card" id="box_has"></div></section>
+<section data-v="lap" class="hide"><div class="card" id="box_lap"></div></section>
+<section data-v="set" class="hide"><div class="card" id="box_set"></div></section>
+<footer>Hotline MANU - Guru · MA Nurul Ummah</footer></main></div>
+<div class="modal" id="modal"><div id="modalBody"></div></div>
+<div id="toast" role="status"></div>
+
+<script>
+// ====== KONFIGURASI ======
+// Tempel URL Web App Google Apps Script (berakhiran /exec).
+const API_URL = "https://script.google.com/macros/s/AKfycbwUXE_Jpw0YNP05d_y7W53OJM1nN78dPhMZc0XtDKSPZf_xbnCtZ08Jgj5pZL3zyU6U/exec";
+// =========================
+
+const JENIS = ["Aduan","Keluhan","Kritik","Saran","Aspirasi","Permintaan tindak lanjut"];
+const STATUS = ["Diajukan","Diverifikasi Admin","Diteruskan ke Kepala Madrasah","Dalam Tindak Lanjut","Menunggu Informasi","Selesai","Tidak Dapat Ditindaklanjuti"];
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let sess = null, kategori = [], user = null;
+try { sess = sessionStorage.getItem("hm_s"); user = JSON.parse(sessionStorage.getItem("hm_u") || "null"); } catch (e) {}
+
+function toast(m, err) { const t = $("#toast"); t.textContent = m; t.className = err ? "err" : ""; t.style.display = "block"; clearTimeout(toast.t); toast.t = setTimeout(() => t.style.display = "none", 4000); }
+
+async function api(action, p = {}) {
+  if (API_URL.startsWith("GANTI")) throw new Error("API_URL belum diisi di index.html");
+  // text/plain: hindari preflight CORS pada Apps Script
+  const r = await fetch(API_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action, session: sess, ...p }) });
+  const j = await r.json();
+  if (!j.ok) { if (j.code === "AUTH") logout(true); throw new Error(j.error || "Permintaan gagal"); }
+  return j.data;
+}
+async function run(btn, fn) { if (btn) btn.disabled = true; try { await fn(); } catch (e) { toast(e.message, true); } finally { if (btn) btn.disabled = false; } }
+
+// ---- navigasi ----
+const IC={home:"M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z",aduan:"M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z",cek:"M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z",eval:"M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z",login:"M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z",dash:"M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z",list:"M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z",out:"M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"};
+function buildNav() {
+  const G = [["Guru", [["home","Beranda"],["aduan","Sampaikan aduan"],["cek","Cek status tiket"],["eval","Evaluasi Kepala Madrasah"]]],
+    ["Pengelola", user ? PMENU() : [["login","Masuk pengelola"]]]];
+  const ic = k => `<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="${IC[k]}"/></svg>`;
+  $("#rail").innerHTML = `<div class="logo">M</div>` + G.flatMap(g => g[1]).map(([k, l]) => `<button data-k="${k}" title="${l}" aria-label="${l}">${ic(k)}</button>`).join("");
+  $("#side").innerHTML = `<h1>Hotline MANU</h1><p class="mut">MA Nurul Ummah · Guru</p>` + G.map(([t, it]) => `<h4>${t}</h4>` + it.map(([k, l]) => `<button data-k="${k}">${l}</button>`).join("")).join("");
+}
+document.addEventListener("click", e => { const b = e.target.closest("#rail [data-k],#side [data-k]"); if (!b) return; b.dataset.k === "out" ? logout() : show(b.dataset.k); });
+function show(v) {
+  document.querySelectorAll("[data-v]").forEach(s => s.classList.toggle("hide", s.dataset.v !== v));
+  document.querySelectorAll("[data-k]").forEach(b => b.classList.toggle("on", b.dataset.k === v));
+  if (v === "eval") loadEval(); if (v === "dash") loadDash(); if (v === "list") loadList(); if (LOADERS[v]) LOADERS[v]();
+  scrollTo(0, 0);
+}
+
+// ---- aduan ----
+function fillSub() { const k = kategori.find(x => x.kategori === $("#kat").value); const s = (k && k.subkategori) || []; $("#sub").innerHTML = s.map(x => `<option>${esc(x)}</option>`).join("") || "<option>-</option>"; }
+async function initPublic() {
+  $("#jenis").innerHTML = JENIS.map(x => `<option>${x}</option>`).join("");
+  try { kategori = (await api("getKategori")) || []; } catch (e) { kategori = []; toast(e.message, true); }
+  $("#kat").innerHTML = kategori.map(k => `<option>${esc(k.kategori)}</option>`).join("");
+  fillSub();
+}
+$("#kat").addEventListener("change", fillSub);
+$("#fAduan").addEventListener("submit", e => { e.preventDefault(); run($("#bAduan"), async () => {
+  const d = await api("submitAduan", { jenis: $("#jenis").value, kategori: $("#kat").value, subkategori: $("#sub").value, judul: $("#judul").value.trim(), isi: $("#isi").value.trim(), urgensi: $("#urg").value, harapan: $("#harap").value.trim() });
+  $("#tiketOut").textContent = d.tiket; $("#fAduan").classList.add("hide"); $("#hasilAduan").classList.remove("hide");
+}); });
+function copyTiket() { const t = $("#tiketOut").textContent; (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast("Nomor tiket disalin"), () => toast("Salin manual: " + t)); }
+function resetAduan() { $("#fAduan").reset(); fillSub(); $("#fAduan").classList.remove("hide"); $("#hasilAduan").classList.add("hide"); }
+
+// ---- cek tiket ----
+$("#bCek").addEventListener("click", () => run($("#bCek"), async () => {
+  const t = $("#tk").value.trim(); if (!t) return toast("Isi nomor tiket", true);
+  const d = await api("getTicketStatus", { tiket: t });
+  $("#cekOut").innerHTML = `<div class="card"><h3>${esc(d.judul)}</h3><p><span class="tag">${esc(d.status)}</span> <span class="mut">${esc(d.kategori)} · diajukan ${esc(d.tanggal)}</span></p>
+   ${d.respons ? `<h3>Respons pengelola</h3><p>${esc(d.respons)}</p>` : `<p class="mut">Belum ada respons.</p>`}
+   <h3>Riwayat</h3>${(d.riwayat || []).map(r => `<div class="tl"><b>${esc(r.status)}</b> <span class="mut">${esc(r.waktu)}</span>${r.respons ? `<div>${esc(r.respons)}</div>` : ""}</div>`).join("") || `<p class="mut">-</p>`}</div>`;
+}));
+
+// ---- evaluasi ----
+let evalData = null;
+async function loadEval() {
+  const box = $("#evalBox"); box.textContent = "Memuat...";
+  try {
+    evalData = await api("getKuesioner");
+    if (!evalData || !evalData.periode) { box.textContent = "Tidak ada periode evaluasi yang sedang dibuka."; return; }
+    const pid = evalData.periode.id, key = "hm_done_" + pid;
+    if (localStorage.getItem(key)) { box.textContent = "Perangkat ini sudah mengisi evaluasi periode ini. Terima kasih."; return; }
+    let dim = "";
+    box.className = "";
+    box.innerHTML = `<p class="mut">${esc(evalData.periode.nama)} · anonim. Skala 1 = Sangat Tidak Setuju, 5 = Sangat Setuju.</p><form id="fEval">${evalData.wajibKode ? '<label for="kode">Kode partisipasi</label><input id="kode" maxlength="12" autocomplete="off" required>' : ""}` +
+      evalData.pertanyaan.map((q, i) => {
+        let h = ""; if (q.dimensi !== dim) { dim = q.dimensi; h = `<h3>${esc(dim)}</h3>`; }
+        const inp = q.jenis === "Likert"
+          ? `<div class="likert">${[1,2,3,4,5].map(n => `<label><input type="radio" name="q${esc(q.id)}" value="${n}"${q.wajib ? " required" : ""}>${n}</label>`).join("")}</div>`
+          : `<textarea name="q${esc(q.id)}" maxlength="1500"${q.wajib ? " required" : ""}></textarea>`;
+        return `${h}<label>${i + 1}. ${esc(q.teks)}</label>${inp}`;
+      }).join("") + `<button class="btn" id="bEval">Kirim evaluasi</button></form>`;
+    $("#fEval").addEventListener("submit", e => { e.preventDefault(); run($("#bEval"), async () => {
+      const jawaban = {}, fd = new FormData(e.target);
+      evalData.pertanyaan.forEach(q => { const v = (fd.get("q" + q.id) || "").toString().trim(); if (v) jawaban[q.id] = v; });
+      let tr = localStorage.getItem("hm_tr_" + pid); if (!tr) { tr = crypto.randomUUID(); localStorage.setItem("hm_tr_" + pid, tr); }
+      await api("submitKuesioner", { periodeId: pid, tokenResponden: tr, jawaban, kode: ($("#kode") || {}).value || "" });
+      localStorage.setItem(key, "1"); toast("Evaluasi terkirim. Terima kasih."); loadEval();
+    }); });
+  } catch (e) { box.textContent = e.message; }
+}
+
+// ---- pengelola ----
+$("#fLogin").addEventListener("submit", e => { e.preventDefault(); run(e.submitter, async () => {
+  const d = await api("login", { username: $("#u").value.trim(), password: $("#p").value });
+  sess = d.session; user = { nama: d.nama, peran: d.peran };
+  sessionStorage.setItem("hm_s", sess); sessionStorage.setItem("hm_u", JSON.stringify(user));
+  $("#p").value = ""; buildNav(); show("dash");
+}); });
+function logout(silent) { sess = null; user = null; sessionStorage.clear(); buildNav(); show("home"); if (!silent) toast("Anda telah keluar"); }
+function bars(o) { const m = Math.max(1, ...Object.values(o)); return Object.entries(o).map(([k, v]) => `<div class="bar"><span>${esc(k)}</span><i style="width:${v / m * 55}%"></i><b>${v}</b></div>`).join("") || `<p class="mut">-</p>`; }
+async function loadDash() {
+  if (!user) return show("login");
+  try {
+    const d = await api("getAdminDashboard");
+    $("#dashBox").className = "";
+    $("#dashBox").innerHTML = `<p class="mut">Masuk sebagai ${esc(user.nama)} (${esc(user.peran)}) · evaluasi aktif: ${esc((d.evaluasi && d.evaluasi.periodeAktif) || "tidak ada")}, responden ${+(d.evaluasi && d.evaluasi.responden) || 0}</p><button class="btn sec" onclick="chgPw()">Ganti kata sandi</button><div class="grid">
+     <div class="stat"><b>${+d.total || 0}</b>Total aduan</div><div class="stat"><b>${+d.belumSelesai || 0}</b>Belum selesai</div>
+     <div class="stat"><b>${+d.urgensiTinggi || 0}</b>Urgensi tinggi</div><div class="stat"><b>${d.rataHari == null ? "-" : esc(d.rataHari)}</b>Rata-rata hari selesai</div></div>
+     <h3>Per status</h3>${bars(d.perStatus || {})}<h3>Per kategori</h3>${bars(d.perKategori || {})}`;
+  } catch (e) { $("#dashBox").textContent = e.message; }
+}
+async function loadList() {
+  if (!user) return show("login");
+  const fs = $("#fs"); if (!fs.options.length) fs.innerHTML = `<option value="">Semua</option>` + STATUS.map(s => `<option>${s}</option>`).join("");
+  const box = $("#listBox"); box.textContent = "Memuat...";
+  try {
+    const rows = await api("getAduanList", { status: fs.value });
+    box.innerHTML = rows.map(r => `<div class="row" data-id="${esc(r.id)}"><b>${esc(r.judul)}</b><br><span class="tag">${esc(r.status)}</span> <span class="tag">${esc(r.urgensi)}</span> <span class="mut">${esc(r.kategori)} · ${esc(r.tanggal)}</span></div>`).join("") || `<p class="mut">Tidak ada aduan.</p>`;
+  } catch (e) { box.textContent = e.message; }
+}
+$("#fs").addEventListener("change", loadList);
+$("#listBox").addEventListener("click", e => { const r = e.target.closest(".row"); if (r) openDetail(r.dataset.id); });
+async function openDetail(id) {
+  try {
+    const d = await api("getAduanDetail", { id });
+    $("#modalBody").innerHTML = `<h2>${esc(d.judul)}</h2><p><span class="tag">${esc(d.status)}</span> <span class="tag">${esc(d.urgensi)}</span> <span class="mut">${esc(d.jenis)} · ${esc(d.kategori)} / ${esc(d.subkategori)} · ${esc(d.tanggal)}</span></p>
+     <p style="white-space:pre-wrap">${esc(d.isi)}</p>${d.harapan ? `<h3>Harapan</h3><p>${esc(d.harapan)}</p>` : ""}
+     <h3>Riwayat</h3>${(d.riwayat || []).map(r => `<div class="tl"><b>${esc(r.status)}</b> <span class="mut">${esc(r.waktu)} · ${esc(r.petugas)}</span>${r.catatan ? `<div><i>Internal:</i> ${esc(r.catatan)}</div>` : ""}${r.respons ? `<div><i>Publik:</i> ${esc(r.respons)}</div>` : ""}</div>`).join("") || `<p class="mut">-</p>`}
+     <h3>Tindak lanjut</h3><form id="fTL"><label>Status baru</label><select id="tlS">${STATUS.map(s => `<option${s === d.status ? " selected" : ""}>${s}</option>`).join("")}</select>
+     <label>Catatan internal (tidak tampil ke guru)</label><textarea id="tlC" maxlength="2000" style="min-height:70px"></textarea>
+     <label>Respons publik (tampil di cek tiket)</label><textarea id="tlR" maxlength="2000" style="min-height:70px"></textarea>
+     <label>Penanggung jawab</label><input id="tlP" maxlength="100" value="${esc(d.penanggungJawab)}"><label>Tanggal target</label><input id="tlT" type="date" value="${esc(d.tanggalTarget)}"><label>Prioritas</label><select id="tlU">${URG.map(u => `<option${u === d.prioritas ? " selected" : ""}>${u}</option>`).join("")}</select>
+     <button class="btn" id="bTL">Simpan</button> <button type="button" class="btn sec" onclick="closeModal()">Tutup</button></form>`;
+    $("#modal").style.display = "block";
+    $("#fTL").addEventListener("submit", e => { e.preventDefault(); run($("#bTL"), async () => {
+      await api("addTindakLanjut", { id, status: $("#tlS").value, catatan: $("#tlC").value.trim(), respons: $("#tlR").value.trim(), penanggungJawab: $("#tlP").value.trim(), tanggalTarget: $("#tlT").value, prioritas: $("#tlU").value });
+      toast("Tersimpan"); closeModal(); loadList();
+    }); });
+  } catch (e) { toast(e.message, true); }
+}
+function closeModal() { $("#modal").style.display = "none"; }
+$("#modal").addEventListener("click", e => { if (e.target.id === "modal") closeModal(); });
+
+
+// ====== MODUL PENGELOLA ======
+const URG = ["Rendah", "Sedang", "Tinggi"];
+const LOADERS = {};
+const isAdm = () => user && user.peran === "Admin";
+const PMENU = () => [["dash","Dashboard"],["list","Daftar aduan"],...(isAdm() ? [["kat","Kategori"],["ban","Bank pertanyaan"],["per","Periode evaluasi"]] : []),["has","Hasil evaluasi"],["lap","Laporan"],...(isAdm() ? [["set","Pengaturan"]] : []),["out","Keluar"]];
+Object.assign(IC, {
+ kat: "M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z",
+ ban: "M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z",
+ per: "M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z",
+ has: "M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z",
+ lap: "M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z",
+ set: "M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"
+});
+const need = () => { if (!user) { show("login"); return false; } return true; };
+const yn = b => b ? "aktif" : "nonaktif";
+const tbl = (h, r) => `<div class="tw"><table><thead><tr>${h.map(x => `<th>${esc(x)}</th>`).join("")}</tr></thead><tbody>${r.map(a => `<tr>${a.map(x => `<td>${esc(x)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+
+function fld(f, v) {
+  const id = "f_" + f.k, x = v == null ? "" : v; let c;
+  if (f.t === "area") c = `<textarea id="${id}" maxlength="${f.m || 2000}" style="min-height:80px">${esc(x)}</textarea>`;
+  else if (f.t === "sel" || f.t === "bool") {
+    const o = f.t === "bool" ? [["1","Ya"],["0","Tidak"]] : f.o.map(z => [z, z]);
+    const cur = f.t === "bool" ? (x === "" || x === true || x === "TRUE" ? "1" : "0") : x;
+    c = `<select id="${id}">${o.map(([a, b]) => `<option value="${esc(a)}"${a == cur ? " selected" : ""}>${esc(b)}</option>`).join("")}</select>`;
+  } else c = `<input id="${id}" type="${f.t === "num" ? "number" : f.t === "date" ? "date" : f.t === "pw" ? "password" : "text"}" value="${esc(x)}" maxlength="${f.m || 120}"${f.t === "pw" ? ' autocomplete="new-password"' : ""}>`;
+  return `<label for="${id}">${esc(f.l)}</label>${c}`;
+}
+function formModal(title, fields, vals, onSave) {
+  vals = vals || {};
+  $("#modalBody").innerHTML = `<h2>${esc(title)}</h2><form id="fM">${fields.map(f => fld(f, vals[f.k])).join("")}<button class="btn" id="bM">Simpan</button><button type="button" class="btn sec" onclick="closeModal()">Batal</button></form>`;
+  $("#modal").style.display = "block";
+  $("#fM").addEventListener("submit", e => { e.preventDefault(); run($("#bM"), async () => {
+    const o = {}; fields.forEach(f => { let v = $("#f_" + f.k).value; if (f.t === "bool") v = v === "1"; o[f.k] = v; }); await onSave(o);
+  }); });
+}
+function chgPw() {
+  formModal("Ganti kata sandi", [{ k: "passwordLama", l: "Kata sandi lama", t: "pw" }, { k: "passwordBaru", l: "Kata sandi baru (min. 8 karakter)", t: "pw" }], {}, async o => { await api("changePassword", o); closeModal(); toast("Kata sandi diganti"); });
+}
+
+// kategori
+LOADERS.kat = async () => {
+  if (!need()) return; const b = $("#box_kat"); b.textContent = "Memuat...";
+  try {
+    const d = await api("getKategoriAdmin");
+    b.innerHTML = `<h2>Kategori aduan</h2><button class="btn" id="kNew">Tambah</button><div style="margin-top:12px">${d.map((k, i) => `<div class="row" data-i="${i}"><b>${esc(k.kategori)}</b> · ${esc(k.subkategori || "-")} <span class="tag">${yn(k.aktif)}</span> <span class="mut">urutan ${k.urutan}</span></div>`).join("")}</div>`;
+    $("#kNew").onclick = () => editKat({ aktif: true, urutan: d.length + 1 });
+    b.querySelectorAll(".row").forEach(r => r.onclick = () => editKat(d[r.dataset.i]));
+  } catch (e) { b.textContent = e.message; }
+};
+function editKat(k) {
+  formModal(k.id ? "Ubah kategori" : "Tambah kategori", [{ k: "kategori", l: "Kategori" }, { k: "subkategori", l: "Subkategori" }, { k: "urutan", l: "Urutan", t: "num" }, { k: "aktif", l: "Aktif", t: "bool" }], k,
+    async o => { await api("saveKategori", { id: k.id, ...o }); closeModal(); toast("Tersimpan"); LOADERS.kat(); });
+}
+
+// bank pertanyaan
+LOADERS.ban = async () => {
+  if (!need()) return; const b = $("#box_ban"); b.textContent = "Memuat...";
+  try {
+    const d = await api("getPertanyaan");
+    b.innerHTML = `<h2>Bank pertanyaan</h2><p class="mut">Pertanyaan yang sudah dipakai periode tidak diubah di tempat: perubahan teks membuat versi baru.</p><button class="btn" id="qNew">Tambah</button><div style="margin-top:12px">${d.pertanyaan.map((q, i) => `<div class="row" data-i="${i}"><b>${esc(q.teks)}</b><br><span class="tag">${esc(q.dimensi)}</span> <span class="tag">${esc(q.jenis)}</span> <span class="tag">${yn(q.aktif)}</span>${q.terpakai ? ` <span class="mut">dipakai ${esc(q.periode)}</span>` : ""}</div>`).join("")}</div>`;
+    const ed = q => formModal(q.id ? "Ubah pertanyaan" : "Tambah pertanyaan", [{ k: "dimensi", l: "Dimensi", t: "sel", o: d.dimensi }, { k: "teks", l: "Teks pertanyaan", t: "area", m: 400 }, { k: "jenis", l: "Jenis", t: "sel", o: d.jenis }, { k: "wajib", l: "Wajib dijawab", t: "bool" }, { k: "aktif", l: "Aktif", t: "bool" }, { k: "urutan", l: "Urutan", t: "num" }], q,
+      async o => { const r = await api("savePertanyaan", { id: q.id, ...o }); closeModal(); toast(r.versiBaru ? "Sudah dipakai: dibuat versi baru" : "Tersimpan"); LOADERS.ban(); });
+    $("#qNew").onclick = () => ed({ dimensi: d.dimensi[0], jenis: "Likert", wajib: true, aktif: true, urutan: d.pertanyaan.length + 1 });
+    b.querySelectorAll(".row").forEach(r => r.onclick = () => ed(d.pertanyaan[r.dataset.i]));
+  } catch (e) { b.textContent = e.message; }
+};
+
+// periode
+let PER = [], HAS_PID = "";
+LOADERS.per = async () => {
+  if (!need()) return; const b = $("#box_per"); b.textContent = "Memuat...";
+  try {
+    PER = await api("getPeriode");
+    const A = { Draft: [["edit","Ubah"],["open","Buka"],["kode","Kode"]], Aktif: [["close","Tutup"],["kode","Kode"]], Ditutup: [["arch","Arsipkan"],["hasil","Hasil"]], Arsip: [["hasil","Hasil"]] };
+    b.innerHTML = `<h2>Periode evaluasi</h2><button class="btn" id="pNew">Buat periode</button><div style="margin-top:12px">${PER.map(p => `<div class="row" style="cursor:default"><b>${esc(p.nama)}</b> <span class="tag">${esc(p.status)}</span><br><span class="mut">${esc(p.mulai || "-")} s.d. ${esc(p.selesai || "-")} · responden ${p.responden}</span><div>${(A[p.status] || []).map(([a, l]) => `<button class="btn sec" data-a="${a}" data-id="${esc(p.id)}" style="margin-top:8px">${l}</button>`).join("")}</div></div>`).join("") || '<p class="mut">Belum ada periode.</p>'}</div>`;
+    $("#pNew").onclick = () => perForm();
+    b.onclick = e => { const t = e.target.closest("[data-a]"); if (t) perAct(t.dataset.a, t.dataset.id); };
+  } catch (e) { b.textContent = e.message; }
+};
+function perForm(p) {
+  formModal(p ? "Ubah periode" : "Buat periode", [{ k: "nama", l: "Nama periode (mis. Ganjil 2026/2027)" }, { k: "deskripsi", l: "Deskripsi", t: "area", m: 500 }, { k: "tanggalMulai", l: "Tanggal mulai (opsional)", t: "date" }, { k: "tanggalSelesai", l: "Tanggal selesai (opsional)", t: "date" }],
+    p ? { nama: p.nama, deskripsi: p.deskripsi, tanggalMulai: p.mulai, tanggalSelesai: p.selesai } : {},
+    async o => { await api(p ? "updatePeriode" : "createPeriode", { id: p && p.id, ...o }); closeModal(); toast("Tersimpan"); LOADERS.per(); });
+}
+async function perAct(a, id) {
+  const p = PER.find(x => x.id === id);
+  if (a === "edit") return perForm(p);
+  if (a === "hasil") { HAS_PID = id; return show("has"); }
+  if (a === "kode") return formModal("Buat kode partisipasi", [{ k: "jumlah", l: "Jumlah kode (1–200)", t: "num" }], { jumlah: 40 }, async o => {
+    const d = await api("generateKode", { periodeId: id, jumlah: +o.jumlah });
+    $("#modalBody").innerHTML = `<h2>Kode partisipasi</h2><p class="mut">${esc(d.catatan)}</p><textarea readonly style="min-height:200px">${esc(d.kode.join("\n"))}</textarea><button class="btn" onclick="closeModal()">Tutup</button>`;
+  });
+  const M = { open: ["openPeriode", "Buka periode? Pertanyaan aktif dikunci ke periode ini."], close: ["closePeriode", "Tutup periode? Guru tidak bisa mengisi lagi."], arch: ["archivePeriode", "Arsipkan periode?"] }[a];
+  if (!confirm(M[1])) return;
+  try { await api(M[0], { id }); toast("Berhasil"); LOADERS.per(); } catch (e) { toast(e.message, true); }
+}
+
+// hasil evaluasi
+LOADERS.has = async () => {
+  if (!need()) return; const b = $("#box_has"); b.textContent = "Memuat...";
+  try {
+    const ps = (await api("getPeriode")).filter(p => p.status === "Ditutup" || p.status === "Arsip");
+    if (!ps.length) { b.innerHTML = '<h2>Hasil evaluasi</h2><p class="mut">Belum ada periode yang ditutup.</p>'; return; }
+    if (!ps.some(p => p.id === HAS_PID)) HAS_PID = ps[ps.length - 1].id;
+    b.innerHTML = `<h2>Hasil evaluasi</h2><label for="hp">Periode</label><select id="hp">${ps.map(p => `<option value="${esc(p.id)}"${p.id === HAS_PID ? " selected" : ""}>${esc(p.nama)}</option>`).join("")}</select><div id="hOut" style="margin-top:12px"></div>`;
+    $("#hp").onchange = e => { HAS_PID = e.target.value; showHasil(); }; showHasil();
+  } catch (e) { b.textContent = e.message; }
+};
+async function showHasil() {
+  const o = $("#hOut"); o.textContent = "Memuat...";
+  try {
+    const d = await api("getHasilEvaluasi", { periodeId: HAS_PID });
+    if (d.terbatas) { o.innerHTML = `<p>${esc(d.pesan)}</p>`; return; }
+    const sb = l => l.map(x => `<div class="bar"><span>${esc(x.dimensi)}</span><i style="width:${x.rata / 5 * 55}%"></i><b>${x.rata}</b></div>`).join("");
+    o.innerHTML = `<div class="grid"><div class="stat"><b>${d.responden}</b>Responden</div><div class="stat"><b>${d.partisipasi == null ? "-" : d.partisipasi + "%"}</b>Partisipasi</div><div class="stat"><b>${d.rataKeseluruhan == null ? "-" : d.rataKeseluruhan}</b>Rata-rata · ${esc(d.interpretasi)}</div></div>
+     <h3>Skor per dimensi</h3>${sb(d.perDimensi)}<h3>Kekuatan</h3>${sb(d.kekuatan)}<h3>Prioritas perbaikan</h3>${sb(d.prioritasPerbaikan)}
+     ${d.rekomendasi.length ? `<h3>Rekomendasi tindak lanjut</h3><ul>${d.rekomendasi.map(r => `<li>${esc(r)}</li>`).join("")}</ul>` : ""}
+     <h3>Skor per pertanyaan</h3>${tbl(["Dimensi","Pertanyaan","Rata","1","2","3","4","5"], d.perPertanyaan.filter(q => q.jenis === "Likert").map(q => [q.dimensi, q.teks, q.rata, q.distribusi[1], q.distribusi[2], q.distribusi[3], q.distribusi[4], q.distribusi[5]]))}
+     <h3>Komentar dan saran</h3>${d.komentar.map(k => `<p><b>${esc(k.teks)}</b></p>${k.jawaban.length ? `<ul>${k.jawaban.map(j => `<li>${esc(j)}</li>`).join("")}</ul>` : '<p class="mut">-</p>'}`).join("")}
+     ${d.perbandingan.length ? `<h3>Perbandingan semester</h3>${tbl(["Periode","Rata-rata"], [[d.periode.nama, d.rataKeseluruhan]].concat(d.perbandingan.map(x => [x.nama, x.rataKeseluruhan])))}` : ""}
+     <p class="mut">${esc(d.interpretasiCatatan)}</p>`;
+  } catch (e) { o.textContent = e.message; }
+}
+
+// laporan
+function dl(d) {
+  const bin = atob(d.base64), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([u], { type: d.mime })); a.download = d.filename;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+LOADERS.lap = async () => {
+  if (!need()) return; const b = $("#box_lap"); b.textContent = "Memuat...";
+  try {
+    const ps = (await api("getPeriode")).filter(p => p.status === "Ditutup" || p.status === "Arsip");
+    b.innerHTML = `<h2>Laporan</h2><label for="lj">Jenis</label><select id="lj"><option value="aduan">Aduan</option><option value="evaluasi">Evaluasi Kepala Madrasah</option></select>
+     <div id="la"><label for="ld">Dari</label><input id="ld" type="date"><label for="ls">Sampai</label><input id="ls" type="date"><label for="lst">Status</label><select id="lst"><option value="">Semua</option>${STATUS.map(x => `<option>${x}</option>`).join("")}</select></div>
+     <div id="le" class="hide"><label for="lp">Periode (sudah ditutup)</label><select id="lp">${ps.map(p => `<option value="${esc(p.id)}">${esc(p.nama)}</option>`).join("") || "<option value=''>Belum ada</option>"}</select></div>
+     <button class="btn" id="lv">Tampilkan</button><button class="btn sec" id="lpdf">Unduh PDF</button><button class="btn sec" id="lxl">Unduh Excel</button><div id="lOut" style="margin-top:12px"></div>`;
+    const ev = () => $("#lj").value === "evaluasi";
+    $("#lj").onchange = () => { $("#la").classList.toggle("hide", ev()); $("#le").classList.toggle("hide", !ev()); };
+    const q = () => ev() ? { jenis: "evaluasi", periodeId: $("#lp").value } : { jenis: "aduan", dari: $("#ld").value, sampai: $("#ls").value, status: $("#lst").value };
+    $("#lv").onclick = e => run(e.target, async () => { const d = await api("getLaporan", q()); $("#lOut").innerHTML = `<h3>${esc(d.judul)}</h3>` + d.sections.map(s => `<h3>${esc(s.judul)}</h3>` + tbl(s.headers, s.rows)).join(""); });
+    $("#lpdf").onclick = e => run(e.target, async () => dl(await api("exportPDF", q())));
+    $("#lxl").onclick = e => run(e.target, async () => dl(await api("exportExcel", q())));
+  } catch (e) { b.textContent = e.message; }
+};
+
+// pengaturan
+LOADERS.set = async () => {
+  if (!need()) return; const b = $("#box_set"); b.textContent = "Memuat...";
+  try {
+    const [c, u] = await Promise.all([api("getConfig"), api("getUsers")]);
+    b.innerHTML = `<h2>Pengaturan</h2><h3>Konfigurasi</h3>${tbl(["Kunci","Nilai"], Object.entries(c).filter(([k]) => k !== "_info"))}<button class="btn" id="sCfg">Ubah konfigurasi</button>
+     <h3>Akun pengelola</h3>${u.map((x, i) => `<div class="row" data-i="${i}"><b>${esc(x.nama)}</b> (${esc(x.username)}) <span class="tag">${esc(x.peran)}</span> <span class="tag">${yn(x.aktif)}</span> <span class="mut">login terakhir ${esc(x.terakhirLogin || "-")}</span></div>`).join("")}
+     <button class="btn sec" id="sUsr">Tambah akun</button><button class="btn sec" id="sPw">Ganti kata sandi saya</button>`;
+    const bools = ["WAJIB_KODE", "TAMPILKAN_NAMA_PETUGAS"];
+    $("#sCfg").onclick = () => formModal("Ubah konfigurasi", [{ k: "NAMA_APLIKASI", l: "Nama aplikasi" }, { k: "NAMA_MADRASAH", l: "Nama madrasah" }, { k: "JUMLAH_GURU", l: "Jumlah guru (untuk partisipasi)", t: "num" }, { k: "MIN_RESPONDEN_HASIL", l: "Minimal responden untuk tampil hasil (3–100)", t: "num" }, { k: "WAJIB_KODE", l: "Wajib kode partisipasi", t: "bool" }, { k: "TAMPILKAN_NAMA_PETUGAS", l: "Tampilkan nama petugas di cek tiket", t: "bool" }], c,
+      async o => { const values = {}; Object.keys(o).forEach(k => values[k] = bools.includes(k) ? (o[k] ? "TRUE" : "FALSE") : String(o[k])); await api("saveConfig", { values }); closeModal(); toast("Tersimpan"); LOADERS.set(); });
+    const ed = x => formModal(x.id ? "Ubah akun" : "Tambah akun", [{ k: "username", l: "Username" }, { k: "nama", l: "Nama" }, { k: "peran", l: "Peran", t: "sel", o: ["Admin", "Kepala Madrasah"] }, { k: "aktif", l: "Aktif", t: "bool" }, { k: "password", l: "Kata sandi (kosongkan jika tidak diubah)", t: "pw" }], x,
+      async o => { await api("saveUser", { id: x.id, ...o }); closeModal(); toast("Tersimpan"); LOADERS.set(); });
+    $("#sUsr").onclick = () => ed({ peran: "Admin", aktif: true });
+    $("#sPw").onclick = chgPw;
+    b.querySelectorAll(".row").forEach(r => r.onclick = () => ed(u[r.dataset.i]));
+  } catch (e) { b.textContent = e.message; }
+};
+
+buildNav(); show("home"); initPublic();
+</script>
+</body>
+</html>
