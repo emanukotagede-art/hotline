@@ -91,6 +91,14 @@ input[type=checkbox]:checked{border-color:var(--p);background:var(--p) url("data
 .modal>div{max-width:560px;margin:20px auto;background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:24px}
 .modal h2{font-size:1.5rem}
 .hide{display:none!important}
+.hsub{font:400 1.15rem var(--serif);margin:26px 0 2px}
+.qa{margin:16px 0}.qa b{display:block;font-weight:600}.qa p{margin:4px 0 0;white-space:pre-wrap}
+.kom{display:grid;grid-template-columns:2fr 2fr 1fr;gap:8px;margin-top:8px}
+.modal>div.wide{max-width:760px}
+.side button.par{justify-content:space-between}
+.side button.par::after{content:"+";color:var(--faint);font-size:16px;font-weight:400}
+.side button.par.open::after{content:"\2212"}
+.side button.sub{padding-left:28px;font-weight:500;text-transform:none;letter-spacing:.01em;font-size:13px;height:42px}
 footer{padding:28px 0 0;color:var(--faint);font-size:.8rem}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 @media(max-width:860px){
@@ -98,6 +106,10 @@ footer{padding:28px 0 0;color:var(--faint);font-size:.8rem}
  .shell{display:block}
  .side{position:sticky;top:62px;z-index:9;width:auto;max-height:none;border-right:0;border-bottom:1px solid var(--bd);background:var(--bg);padding:0 8px;display:flex;overflow-x:auto;overflow-y:hidden}
  .side h4{display:none}
+ .side .par{display:none}
+ .side .subm,.side .subm.hide{display:flex!important}
+ .side button.sub{padding-left:12px;height:46px;text-transform:uppercase;font-size:12px;letter-spacing:.08em;font-weight:600}
+ .kom{grid-template-columns:1fr}
  .side button{width:auto;flex:none;height:46px;border-bottom:0;padding:0 12px}
  main{padding:28px 18px 40px}
  h1{font-size:2rem}.cols{grid-template-columns:1fr}
@@ -118,6 +130,7 @@ footer{padding:28px 0 0;color:var(--faint);font-size:.8rem}
  <div class="it" data-go="aduan"><span class="n">01</span><div class="b"><b>Sampaikan aduan</b><span>Aduan, keluhan, kritik, saran, atau aspirasi. Anda menerima nomor tiket untuk memantau tindak lanjut.</span></div></div>
  <div class="it" data-go="cek"><span class="n">02</span><div class="b"><b>Cek status tiket</b><span>Masukkan nomor tiket untuk melihat status dan respons pengelola.</span></div></div>
  <div class="it" data-go="eval"><span class="n">03</span><div class="b"><b>Evaluasi Kepala Madrasah</b><span>Kuesioner anonim yang dibuka setiap semester oleh pengelola.</span></div></div>
+ <div class="it" data-go="refg"><span class="n">04</span><div class="b"><b>Refleksi diri guru</b><span>Refleksi akhir semester atau tahun. Identitas tercatat dan dibaca Admin dan Kepala Madrasah.</span></div></div>
  <p class="mut" style="margin-top:20px">Tidak ada nama, email, atau IP guru yang disimpan. Simpan nomor tiket Anda: itu satu-satunya cara memeriksa status.</p>
 </section>
 
@@ -175,6 +188,9 @@ footer{padding:28px 0 0;color:var(--faint);font-size:.8rem}
 <section data-v="has" class="hide"><div class="card" id="box_has"></div></section>
 <section data-v="lap" class="hide"><div class="card" id="box_lap"></div></section>
 <section data-v="set" class="hide"><div class="card" id="box_set"></div></section>
+<section data-v="refg" class="hide"><div class="card" id="box_refg"></div></section>
+<section data-v="refk" class="hide"><div class="card" id="box_refk"></div></section>
+<section data-v="rfl" class="hide"><div class="card" id="box_rfl"></div></section>
 <footer>Hotline MANU - Guru · MA Nurul Ummah</footer></main></div>
 <div class="modal" id="modal"><div id="modalBody"></div></div>
 <div id="toast" role="status"></div>
@@ -205,13 +221,20 @@ async function api(action, p = {}) {
 async function run(btn, fn) { if (btn) btn.disabled = true; try { await fn(); } catch (e) { toast(e.message, true); } finally { if (btn) btn.disabled = false; } }
 
 // ---- navigasi ----
+let CUR = "home", ER_OPEN = true;
 function buildNav() {
-  const G = [["Layanan guru", [["home","Beranda"],["aduan","Sampaikan aduan"],["cek","Cek status tiket"],["eval","Evaluasi Kepala"]]],
+  const kep = user && user.peran === "Kepala Madrasah";
+  const G = [["Layanan", [["home","Beranda"],["aduan","Sampaikan aduan"],["cek","Cek status tiket"],
+      { g: "er", l: "Evaluasi dan refleksi", c: [["refg","Refleksi guru"], ...(kep ? [["refk","Refleksi Kepala Madrasah"]] : []), ["eval","Evaluasi Kepala Madrasah"]] }]],
     ["Pengelola", user ? PMENU() : [["login","Masuk pengelola"]]]];
-  $("#side").innerHTML = G.map(([t, it]) => `<h4>${t}</h4>` + it.map(([k, l]) => `<button data-k="${k}">${l}</button>`).join("")).join("");
+  const btn = (k, l, c) => `<button data-k="${k}"${c ? ` class="${c}"` : ""}>${l}</button>`;
+  $("#side").innerHTML = G.map(([t, it]) => `<h4>${t}</h4>` + it.map(x => Array.isArray(x) ? btn(x[0], x[1]) :
+    `<button class="par${ER_OPEN ? " open" : ""}" data-g="${x.g}">${x.l}</button><div class="subm${ER_OPEN ? "" : " hide"}">${x.c.map(c => btn(c[0], c[1], "sub")).join("")}</div>`).join("")).join("");
+  document.querySelectorAll("[data-k]").forEach(b => b.classList.toggle("on", b.dataset.k === CUR));
 }
 document.addEventListener("click", e => { const b = e.target.closest("#side [data-k]"); if (!b) return; b.dataset.k === "out" ? logout() : show(b.dataset.k); });
 function show(v) {
+  CUR = v; if (!ER_OPEN && ["refg","refk","eval"].includes(v)) { ER_OPEN = true; buildNav(); }
   document.querySelectorAll("[data-v]").forEach(s => s.classList.toggle("hide", s.dataset.v !== v));
   document.querySelectorAll("[data-k]").forEach(b => b.classList.toggle("on", b.dataset.k === v));
   if (v === "eval") loadEval(); if (v === "dash") loadDash(); if (v === "list") loadList(); if (LOADERS[v]) LOADERS[v]();
@@ -321,7 +344,7 @@ async function openDetail(id) {
     }); });
   } catch (e) { toast(e.message, true); }
 }
-function closeModal() { $("#modal").style.display = "none"; }
+function closeModal() { $("#modal").style.display = "none"; $("#modalBody").className = ""; }
 $("#modal").addEventListener("click", e => { if (e.target.id === "modal") closeModal(); });
 
 
@@ -329,7 +352,7 @@ $("#modal").addEventListener("click", e => { if (e.target.id === "modal") closeM
 const URG = ["Rendah", "Sedang", "Tinggi"];
 const LOADERS = {};
 const isAdm = () => user && user.peran === "Admin";
-const PMENU = () => [["dash","Dashboard"],["list","Daftar aduan"],...(isAdm() ? [["kat","Kategori"],["ban","Bank pertanyaan"],["per","Periode evaluasi"]] : []),["has","Hasil evaluasi"],["lap","Laporan"],...(isAdm() ? [["set","Pengaturan"]] : []),["out","Keluar"]];
+const PMENU = () => [["dash","Dashboard"],["list","Daftar aduan"],...(isAdm() ? [["kat","Kategori"],["ban","Bank pertanyaan"],["per","Periode evaluasi"]] : []),["has","Hasil evaluasi"],["rfl","Hasil refleksi"],["lap","Laporan"],...(isAdm() ? [["set","Pengaturan"]] : []),["out","Keluar"]];
 const need = () => { if (!user) { show("login"); return false; } return true; };
 const yn = b => b ? "aktif" : "nonaktif";
 const tbl = (h, r) => `<div class="tw"><table><thead><tr>${h.map(x => `<th>${esc(x)}</th>`).join("")}</tr></thead><tbody>${r.map(a => `<tr>${a.map(x => `<td>${esc(x)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
@@ -504,6 +527,82 @@ function trend(o) {
 
 document.addEventListener("click", e => { const b = e.target.closest(".step button"); if (!b) return; const i = b.parentNode.querySelector("input"); i.value = Math.max(0, (+i.value || 0) + +b.dataset.d); });
 $("#fq").addEventListener("input", () => { clearTimeout(window._fqt); window._fqt = setTimeout(loadList, 350); });
+// ====== REFLEKSI ======
+document.addEventListener("click", e => { if (e.target.closest("[data-g]")) { ER_OPEN = !ER_OPEN; buildNav(); } });
+const val = id => $("#" + id).value.trim();
+LOADERS.refg = () => loadRef("GURU");
+LOADERS.refk = () => loadRef("KEPALA");
+async function loadRef(J) {
+  const box = $(J === "GURU" ? "#box_refg" : "#box_refk");
+  if (J === "KEPALA" && !(user && user.peran === "Kepala Madrasah")) {
+    box.innerHTML = '<h2>Refleksi Kepala Madrasah</h2><p class="mut">Halaman ini hanya untuk akun Kepala Madrasah.</p><button class="btn" onclick="show(\'login\')">Masuk</button>'; return;
+  }
+  box.textContent = "Memuat...";
+  try { renderRef(box, await api("getInstrumenRefleksi", { jenis: J })); } catch (e) { box.textContent = e.message; }
+}
+function renderRef(box, d) {
+  const J = d.jenis, g = J === "GURU";
+  const inp = (id, l, ph) => `<label for="${id}">${esc(l)}</label><input id="${id}" maxlength="200"${ph ? ` placeholder="${esc(ph)}"` : ""}>`;
+  box.innerHTML = `<div class="eb">Evaluasi dan refleksi</div><h2>${esc(d.judul)}</h2>
+   <p class="lead">${g ? "Dibaca oleh Admin dan Kepala Madrasah. Identitas Anda tercatat." : "Dibaca oleh Kepala Madrasah dan Admin."} Dikirim satu kali per periode.</p>
+   <ol class="mut">${d.petunjuk.map(x => `<li>${esc(x)}</li>`).join("")}</ol>
+   <form id="fRef" autocomplete="off">
+    <h3>Periode</h3><div class="cols"><div><label class="req" for="rp">Periode</label><select id="rp">${d.periode.map(p => `<option>${esc(p)}</option>`).join("")}</select></div><div><label class="req" for="rt">Tahun pelajaran</label><input id="rt" maxlength="9" placeholder="2026/2027"></div></div>
+    <h3>A. Identitas</h3>${d.identitas.map(f => `<label${f.req ? ' class="req"' : ""} for="id_${f.k}">${esc(f.l)}</label><input id="id_${f.k}" maxlength="150" value="${g && f.k === "madrasah" ? esc(d.madrasah) : ""}">`).join("")}
+    <h3>B. Refleksi</h3>${d.bagian.map(b => `<div class="hsub">${esc(b.judul)}</div>` + b.soal.map(q => `<label for="q${q.n}">${q.n}. ${esc(q.t)}</label><textarea id="q${q.n}" maxlength="1200" rows="4"></textarea>`).join("")).join("")}
+    <h3>C. Rangkuman</h3>
+    <label>${esc(d.kekuatan)}</label>${[1,2,3].map(i => `<input id="ks${i}" maxlength="200" placeholder="${i}." style="margin-bottom:6px">`).join("")}
+    <label>${esc(d.area)}</label>${[1,2,3].map(i => `<input id="ar${i}" maxlength="200" placeholder="${i}." style="margin-bottom:6px">`).join("")}
+    ${inp("rpt", d.labels.pertahankan)}${inp("rub", d.labels.ubah)}${inp("rpe", d.labels.pesan)}
+    <h3>D. Komitmen tindak lanjut</h3>${[1,2,3].map(i => `<div class="kom"><input id="ky${i}" maxlength="200" placeholder="Yang akan saya lakukan"><input id="kl${i}" maxlength="200" placeholder="Langkah pertama"><input id="kw${i}" maxlength="100" placeholder="Waktu"></div>`).join("")}
+    <button class="btn" id="bRef">Kirim refleksi</button>
+   </form>`;
+  $("#fRef").addEventListener("input", () => { window.onbeforeunload = e => { e.preventDefault(); e.returnValue = ""; }; }, { once: true });
+  $("#fRef").addEventListener("submit", e => { e.preventDefault(); run($("#bRef"), async () => {
+    const identitas = {}; d.identitas.forEach(f => identitas[f.k] = val("id_" + f.k));
+    const jawaban = {}; d.bagian.forEach(b => b.soal.forEach(q => jawaban[q.n] = val("q" + q.n)));
+    const rangkuman = { kekuatan: [1,2,3].map(i => val("ks" + i)), area: [1,2,3].map(i => val("ar" + i)), pertahankan: val("rpt"), ubah: val("rub"), pesan: val("rpe") };
+    const komitmen = [1,2,3].map(i => ({ yang: val("ky" + i), langkah: val("kl" + i), waktu: val("kw" + i) }));
+    try { await api(g ? "submitRefleksiGuru" : "submitRefleksiKepala", { periode: $("#rp").value, tahunPelajaran: val("rt"), identitas, jawaban, rangkuman, komitmen }); }
+    catch (er) { const m = /no\. (\d+)/.exec(er.message); if (m && $("#q" + m[1])) $("#q" + m[1]).focus(); throw er; }
+    window.onbeforeunload = null;
+    box.innerHTML = `<div class="eb">Evaluasi dan refleksi</div><h2>Refleksi terkirim</h2><p class="lead">Terima kasih. Refleksi Anda sudah tersimpan dan tidak dapat dikirim ulang untuk periode ini.</p><button class="btn" onclick="show('home')">Kembali ke beranda</button>`;
+    scrollTo(0, 0);
+  }); });
+}
+
+// hasil refleksi (Admin + Kepala Madrasah)
+LOADERS.rfl = () => {
+  if (!need()) return; const b = $("#box_rfl");
+  b.innerHTML = `<div class="eb">Pengelola</div><h2>Hasil refleksi</h2><label for="rj">Jenis</label><select id="rj"><option value="">Semua</option><option value="GURU">Refleksi guru</option><option value="KEPALA">Refleksi Kepala Madrasah</option></select><div id="rList" style="margin-top:12px"></div>`;
+  $("#rj").onchange = loadRfl; loadRfl();
+};
+async function loadRfl() {
+  const o = $("#rList"); o.textContent = "Memuat...";
+  try {
+    const d = await api("listRefleksi", { jenis: $("#rj").value });
+    o.innerHTML = d.map(r => `<div class="row" data-id="${esc(r.id)}"><b>${esc(r.nama)}</b> <span class="tag">${r.jenis === "GURU" ? "Guru" : "Kepala"}</span><br><span class="mut">${esc(r.periode)} ${esc(r.tp)} · ${esc(r.waktu)}</span></div>`).join("") || '<p class="mut">Belum ada refleksi.</p>';
+    o.onclick = e => { const r = e.target.closest(".row"); if (r) openRfl(r.dataset.id); };
+  } catch (e) { o.textContent = e.message; }
+}
+async function openRfl(id) {
+  try {
+    const d = await api("getRefleksiDetail", { id }), mb = $("#modalBody"), L = d.labels, R = d.rangkuman;
+    const li = a => a.map((x, i) => (i + 1) + ". " + esc(x)).join("\n");
+    mb.className = "wide";
+    mb.innerHTML = `<div class="eb">${esc(d.judul)}</div><h2>${esc(d.nama)}</h2><p class="mut">${esc(d.periode)} ${esc(d.tp)} · dikirim ${esc(d.waktu)}</p>
+     <h3>Identitas</h3>${tbl(["Item","Isian"], d.identitas.map(x => [x.l, x.v]))}
+     ${d.bagian.map(b => `<h3>${esc(b.judul)}</h3>` + b.soal.map(q => `<div class="qa"><b>${q.n}. ${esc(q.t)}</b><p>${esc(q.j)}</p></div>`).join("")).join("")}
+     <h3>Rangkuman</h3><div class="qa"><b>${esc(L.kekuatan)}</b><p>${li(R.kekuatan)}</p></div><div class="qa"><b>${esc(L.area)}</b><p>${li(R.area)}</p></div>
+     <div class="qa"><b>${esc(L.pertahankan)}</b><p>${esc(R.pertahankan)}</p></div><div class="qa"><b>${esc(L.ubah)}</b><p>${esc(R.ubah)}</p></div><div class="qa"><b>${esc(L.pesan)}</b><p>${esc(R.pesan)}</p></div>
+     <h3>Komitmen tindak lanjut</h3>${tbl(["Yang akan saya lakukan","Langkah pertama","Waktu"], d.komitmen.map(k => [k.yang, k.langkah, k.waktu]))}
+     <button class="btn" id="rPdf">Unduh PDF</button>${isAdm() ? '<button class="btn sec" id="rDel">Hapus (agar bisa dikirim ulang)</button>' : ""}<button class="btn sec" onclick="closeModal()">Tutup</button>`;
+    $("#modal").style.display = "block";
+    $("#rPdf").onclick = e => run(e.target, async () => dl(await api("exportPDF", { jenis: "refleksi", id })));
+    if (isAdm()) $("#rDel").onclick = e => { if (!confirm("Hapus refleksi ini? Pengirim dapat mengisi ulang. Tindakan ini permanen.")) return; run(e.target, async () => { await api("hapusRefleksi", { id }); closeModal(); toast("Dihapus"); loadRfl(); }); };
+  } catch (e) { toast(e.message, true); }
+}
+
 document.addEventListener("click", e => { const g = e.target.closest("[data-go]"); if (g) show(g.dataset.go); });
 buildNav(); show("home"); initPublic();
 </script>
